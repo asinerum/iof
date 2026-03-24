@@ -74,6 +74,12 @@ func Structify(data map[string]any, structure []string) []string {
   return clone
 }
 
+// get length of utf8 str
+func Len(data string) int {
+  runes := []rune(data)
+  return len(runes)
+}
+
 // get columns width of text matrix
 func Widths(data [][]string) []int {
   cols := Wide(data)
@@ -82,7 +88,7 @@ func Widths(data [][]string) []int {
   for col := range cols {
     width := 0
     for row := range len(data) {
-      w := len(data[row][col])
+      w := Len(data[row][col])
       if w > width { width = w }
     }
     widths = append(widths, width)
