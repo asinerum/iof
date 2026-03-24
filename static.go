@@ -96,3 +96,4 @@ var PROMPT string
 var YES string
 var NO string
 var CANCEL string
+var MAXSTRLEN int

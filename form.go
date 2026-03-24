@@ -74,6 +74,13 @@ func Structify(data map[string]any, structure []string) []string {
   return clone
 }
 
+// truncate long text or string
+func Truncate(data string, maxlen int) string {
+  runes := []rune(data)
+  if len(runes) <= maxlen { return data }
+  return string(runes[:maxlen])
+}
+
 // get length of utf8 str
 func Len(data string) int {
   runes := []rune(data)
@@ -445,6 +452,12 @@ func StrBool(data string) string {
 func StrZip(text string) string {
   if len(text) < 5 { return THREEDOT }
   return text[0:5] + THREEDOT
+}
+
+// shorten long string
+func StrCut(text string) string {
+  if Len(text) <= MAXSTRLEN { return text }
+  return Truncate(text, MAXSTRLEN) + THREEDOT
 }
 
 // convert db time to date
