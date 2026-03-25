@@ -97,3 +97,21 @@ var YES string
 var NO string
 var CANCEL string
 var MAXSTRLEN int
+
+const TID_SelfZone = "us_"
+const TID_SelfUser = "me_"
+const TID_UpZone = "zi_"
+const TID_UpUser = "ui_"
+const TID_InfoGen = "INFO_"
+
+const T_int = "int"
+const T_float = "float"
+const T_bool = "bool"
+const T_date = "date"
+const T_time = "time"
+const T_pwd = "pwd"
+const T_str = "str"
+const T_strs = "str[]"
+const T_ints = "int[]"
+
+var INPUT_NATIVE_TYPES = []string{T_int, T_float, T_bool, T_date, T_time, T_pwd, T_str, T_strs, T_ints}

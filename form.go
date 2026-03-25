@@ -566,9 +566,16 @@ func Map(data []interface{}) []map[string]any {
   return result
 }
 
+// get current standard rfc3339 timestamp
 func Now() string { return time.Now().Format(time.RFC3339) }
 
+// check if string starts with certain prefix
+func Named(name string, prefix string) bool { return strings.HasPrefix(name, prefix) }
+
+// update ref-object
 func Update(data map[string]interface{}, key string, value any) { data[key] = value }
+
+// set default value of a ref-object item
 func Default(data map[string]interface{}, key string, value any) { if False(Pull(data, key)) { data[key] = value } }
 
 func Type(data any) string { return fmt.Sprintf("%T", data) } // get var type as string

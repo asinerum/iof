@@ -421,6 +421,7 @@ func GetLogin(endpoint string) {
 }
 
 func DataTitle(text string) { Paint("DataTitle", text) }
+func InfoTitle(text string) { Paint("InfoTitle", text) }
 func MenuTitle(text string) { Paint("MenuTitle", text) }
 func MenuLine(text string) { Paint("MenuLine", text) }
 func Warning(text string) { Paint("Warning", text) }
@@ -491,25 +492,35 @@ func Empty(result map[string]interface{}) bool { return False(Result(result)) }
 func Err(result map[string]interface{}) string { return String(result[ERROR]) }
 
 // check api func for own client/zone
-func SelfZone(apifunc string) bool { return apifunc[0:3] == "us_" }
+func SelfZone(apifunc string) bool { return Named(apifunc, TID_SelfZone) }
 
 // check api func for own user
-func SelfUser(apifunc string) bool { return apifunc[0:3] == "me_" }
+func SelfUser(apifunc string) bool { return Named(apifunc, TID_SelfUser) }
 
 // check api func if updates zone-id
-func UpZone(apifunc string) bool { return apifunc[0:3] == "zi_" }
+func UpZone(apifunc string) bool { return Named(apifunc, TID_UpZone) }
 
 // check api func if updates user-id
-func UpUser(apifunc string) bool { return apifunc[0:3] == "ui_" }
+func UpUser(apifunc string) bool { return Named(apifunc, TID_UpUser) }
+
+// check api func if is info generator
+func InfoGen(apifunc string) bool { return Named(apifunc, TID_InfoGen) }
 
 // make data input for calling api service
 // need further process for int[] before posting
 func GetInput(apifunc string) map[string]interface{} {
-  structure := Instruct()[apifunc]
-  configs := Inscript()[apifunc]
+  var structure []string
+  var configs map[string]map[string]string
+  if instruct, ok := Instruct()[apifunc]; ok { structure = instruct }
+  if inconfig, ok := Inscript()[apifunc]; ok { configs = inconfig }
   update := ToUpdate(apifunc)
-  fmt.Println()
-  DataTitle(Capitalize(LABELS[apifunc]))
+  inputtitle := Capitalize(LABELS[apifunc])
+  if InfoGen(apifunc) {
+    InfoTitle(inputtitle)
+  } else {
+    fmt.Println()
+    DataTitle(inputtitle)
+  }
   input := map[string]interface{}{}
   for _, val := range structure {
     prompt := Get(configs[val], "prompt")
@@ -542,31 +553,32 @@ func GetInput(apifunc string) map[string]interface{} {
     }
     if datalist { List(apifunc, "[given data]") }
     fmt.Println()
+    intype := Get(configs[val], "type")
     for {
-      switch Get(configs[val], "type") {
-      case "int":
+      switch intype {
+      case T_int:
         input[val] = GetInt(require, prompt, hprompt, Integer(defval), errvalue, checkfunc(checkapi, val))
         if True(values) && !Ranged(input[val].(int), Interval(values)) && !In(input[val].(int), Integers(values)) { continue }
         if True(forbid) && In(input[val].(int), Integers(forbid)) { continue }
-      case "float":
+      case T_float:
         input[val] = GetFloat(require, prompt, hprompt, Float64(defval), errvalue)
-      case "bool":
+      case T_bool:
         input[val] = DbBool(GetBool(prompt, Yes(defval)))
-      case "date":
+      case T_date:
         input[val] = GetDate(require, prompt, defval)
-      case "time":
+      case T_time:
         input[val] = GetTime(require, prompt, defval)
-      case "pwd":
+      case T_pwd:
         input[val] = GetPwd(prompt)
-      case "str":
+      case T_str:
         input[val] = Form(GetString(require, prompt, hprompt, defval, errvalue, checkfunc(checkapi, val)), format)
         if True(forbid) && Include(any(input[val]), []any{Extract(forbid)}) { continue }
-      case "str[]":
+      case T_strs:
         input[val] = Extract(GetString(require, prompt, hprompt, defval, errvalue, CheckNone()))
-      case "int[]":
+      case T_ints:
         input[val] = Integers(GetString(require, prompt, hprompt, defval, errvalue, CheckNone()))
       default:
-        return map[string]interface{}{}
+        if InfoGen(intype) { input[val] = Stringify(GetInput(intype)) }
       }
       break
     }
