@@ -5,19 +5,36 @@ package iof
 import (
   "os"
   "log"
+  "bytes"
   "strings"
+  "os/exec"
   "encoding/csv"
   "encoding/json"
 
   "gopkg.in/yaml.v3"
 )
 
+// load data from json output
+func StdJson(name string, arg... string) map[string]interface{} {
+  cmd := exec.Command(name, arg...)
+  var out bytes.Buffer
+  cmd.Stdout = &out
+  err := cmd.Run()
+  if err != nil { log.Fatal(err) }
+  return JSON(out.Bytes())
+}
+
 // load data from json file
-func Json(path string) map[string]any {
+func Json(path string) map[string]interface{} {
   file, err := os.ReadFile(path)
   if err != nil { log.Fatal(err) }
-  var result map[string]any
-  err = json.Unmarshal(file, &result)
+  return JSON(file)
+}
+
+// load data from json bytes slice
+func JSON(data []byte) map[string]interface{} {
+  var result map[string]interface{}
+  err := json.Unmarshal(data, &result)
   if err != nil { log.Fatal(err) }
   return result
 }

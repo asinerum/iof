@@ -98,11 +98,23 @@ func Post() {
     fmt.Println()
     if Confirm() { break }
   }
+  fmt.Println()
+  Out(JsonPost(path))
+}
+
+// api post with json file data
+func JsonPost(path string) map[string]interface{} {
   data := Json(path)
   function := String(Pull(data, "function"))
   jsondata := Stringify(Pull(data, "jsondata").(map[string]any))
-  fmt.Println()
-  Out(DirectCall(function, jsondata))
+  return DirectCall(function, jsondata)
+}
+
+// api post with multiple json files
+func JsonsPost(paths []string) map[string]map[string]interface{} {
+  data := map[string]map[string]interface{}{}
+  for _, path := range paths { data[path] = JsonPost(path) }
+  return data
 }
 
 // api call
