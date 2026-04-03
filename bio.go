@@ -14,6 +14,7 @@ import (
   "strings"
   "syscall"
   "os/exec"
+  "encoding/csv"
   "encoding/json"
   "text/tabwriter"
 
@@ -85,6 +86,40 @@ func Action(menuid string, args map[string]interface{}) {
       }
     }
   }
+}
+
+// cli post with args
+func ArgPost(args []string) map[string]interface{} {
+  if len(args) < 2 { return map[string]any{} }
+  function := args[1][1:len(args[1])]
+  if len(args) > 2 { return DirectCall(function, args[2]) }
+  return DirectCall(function, "{}")
+}
+
+// cli post with args, output csv
+func ArgPost2(args []string) [][]string {
+  if len(args) < 2 { return [][]string{} }
+  function := args[1][1:len(args[1])]
+  if len(args) < 3 { return RawCsvArray(Result(DirectCall(function, "{}"))) }
+  if len(args) < 4 { return CsvArray(Result(DirectCall(function, "{}")), Extract(args[2])) }
+  if args[2] == QUESTION { return RawCsvArray(Result(DirectCall(function, args[3]))) }
+  return CsvArray(Result(DirectCall(function, args[3])), Extract(args[2]))
+}
+
+// cli post from arg file
+func FilePost(args []string) map[string]interface{} {
+  if len(args) < 2 { return map[string]any{} }
+  path := args[1][1:len(args[1])]
+  return JsonPost(path)
+}
+
+// cli post from arg file, output csv
+func FilePost2(args []string) [][]string {
+  data := FilePost(args)
+  if False(data) { return [][]string{} }
+  result := Result(data)
+  if len(args) < 3 { return RawCsvArray(result) }
+  return CsvArray(result, Extract(args[2]))
 }
 
 // api post
@@ -302,6 +337,12 @@ func Out(data map[string]any) {
   jdata, err := json.MarshalIndent(data, "", "  ")
   if err != nil { log.Fatal(err) }
   fmt.Println(string(jdata))
+}
+
+// output raw csv data
+func CsvOut(data [][]string) {
+  writer := csv.NewWriter(os.Stdout)
+  if err := writer.WriteAll(data); True(err) { panic(err) }
 }
 
 // clear screen

@@ -34,6 +34,32 @@ func Row(index int, data []interface{}, structure []string) []string {
   }
 }
 
+// get resultset["result"] as head-sorted csv
+func RawCsvArray(data []interface{}) [][]string {
+  if False(data) { return [][]string{} }
+  structure := Arrange(data[0].(map[string]interface{}))
+  return CsvArray(data, structure)
+}
+
+// get all rows from resultset["result"] as csv with heads
+func CsvArray(data []interface{}, structure []string) [][]string {
+  rows := Array(data, structure)
+  for i, row := range rows {
+    for j, col := range row {
+      switch {
+      case Sfalse(col):
+        rows[i][j] = "0"
+      case Strue(col):
+        rows[i][j] = "1"
+      case Snil(col):
+        rows[i][j] = ""
+      }
+    }
+  }
+  rows = slices.Insert(rows, 0, structure)
+  return rows
+}
+
 // get all rows from resultset["result"]
 func Array(data []interface{}, structure []string) [][]string {
   var rows [][]string
@@ -47,6 +73,14 @@ func Array(data []interface{}, structure []string) [][]string {
 // get raw data (list of dicts) from resultset
 func Result(data map[string]interface{}) []interface{} {
   return data[RESULT].([]interface{})
+}
+
+// arrange map keys/heads alphabetically
+func Arrange(data map[string]interface{}) []string {
+  keys := make([]string, 0, len(data))
+  for k := range data { keys = append(keys, k) }
+  slices.Sort(keys)
+  return keys
 }
 
 // get an item from structured slice
@@ -579,6 +613,8 @@ func Update(data map[string]interface{}, key string, value any) { data[key] = va
 func Default(data map[string]interface{}, key string, value any) { if False(Pull(data, key)) { data[key] = value } }
 
 func Type(data any) string { return fmt.Sprintf("%T", data) } // get var type as string
+func Sfalse(data string) bool { return data == "false" } // caution: check string as false
+func Strue(data string) bool { return data == "true" } // caution: check string as false
 func Snil(data string) bool { return data == "<nil>" } // caution: check string as nil
 func Nil(data any) bool { return data == nil } // check var as nil
 

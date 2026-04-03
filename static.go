@@ -25,6 +25,11 @@ const SPACE = " "
 const TAB = "\t"
 const THREEDOT = "..."
 
+const ASTERISK = "*"
+const PLUS = "+"
+const QUESTION = "?"
+const UNDERSCORE = "_"
+
 const EXIT = "exit"
 const QUIT = "quit"
 

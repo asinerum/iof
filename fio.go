@@ -5,6 +5,7 @@ package iof
 import (
   "os"
   "log"
+  "time"
   "bytes"
   "strings"
   "os/exec"
@@ -13,6 +14,18 @@ import (
 
   "gopkg.in/yaml.v3"
 )
+
+// save csv from CsvArray() or RawCsvArray()
+func SaveCsv(data [][]string, path string) (string, error) {
+  if False(path) { path = "./" + time.Now().Format("20060102-150405") + ".csv" }
+  file, err := os.Create(path)
+  if True(err) { return "", err }
+  defer file.Close()
+  writer := csv.NewWriter(file)
+  defer writer.Flush()
+  for _, row := range data { if err := writer.Write(row); True(err) { return "", err } }
+  return path, nil
+}
 
 // load data from json output
 func StdJson(name string, arg... string) map[string]interface{} {
